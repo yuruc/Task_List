@@ -1,0 +1,36 @@
+{% extends "taskList/base.html" %}
+        {% block pagetitle %}
+        <h1>Edit Task </h1>
+        {% endblock %}
+
+  {% block content %}
+    {{ message }}
+
+    <form  enctype="multipart/form-data" method="post" action="{% url 'edit' user.username %}">
+        <table>
+            {% for field in task_form.visible_fields %}
+                <tr>
+                    <td>{{field.label_tag}}</td>
+                    <td>{{field}}</td>
+                    <td class="error">
+                        {% for error in field.errors %} {{error}} {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+
+            <tr>
+                <td>Last Updated:</td>
+                <td colspan="2">
+                    {{task.id}}
+                </td>
+            </tr>
+        </table>
+        {% for field in task_form.hidden_fields %}
+            {{field}} {{field.errors}}
+        {% endfor %}
+        {% csrf_token %}
+        <input type="submit" value="Update">
+    </form>
+
+
+  {% endblock %}

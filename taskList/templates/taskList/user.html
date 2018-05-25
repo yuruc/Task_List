@@ -1,0 +1,43 @@
+{% extends "taskList/base.html" %}
+
+{% block pagetitle %}
+    <h1>User Info</h1>
+{% endblock %}
+
+  {% block content %}
+  <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+
+
+<ol>
+            <p class="lead">
+                Username: {{query_user.username}} <br>
+                First name: {{query_user.first_name}} <br>
+                Last name:{{query_user.last_name}} <br>
+                Email: {{query_user.email}} <br>
+                Title: {{userprofile.title}} <br>
+                Department: {{userprofile.department}}
+
+            </p>
+
+
+</ol>
+
+
+
+<ol>
+    <p class="lead">Here is my tasks: </p>
+    {% for task in tasks %}
+        <a href="{% url 'task' task=task.id %}">
+                {{task.task_name}}</a> 
+            <br>
+
+    {% endfor %}
+</ol>
+
+  {% endblock %}
+
+      </div> 
+    </div> 
+
+  </body>
+</html>

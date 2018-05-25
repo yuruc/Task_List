@@ -1,0 +1,53 @@
+{% extends "taskList/base.html" %}
+        {% block pagetitle %}
+        <h1>Edit MyProfile </h1>
+        {% endblock %}
+
+
+  {% block content %}
+    {{ message }}
+
+
+    <form method="POST" action="{% url 'edit_user' user.id %}">
+        <table>
+            {% for field in user_form.visible_fields %}
+                <tr>
+                    <td>{{field.label_tag}}</td>
+                    <td>{{field}}</td>
+                    <td class="error">
+                        {% for error in field.errors %} {{error}} {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+            {% for field in userprofile_form.visible_fields %}
+                <tr>
+                    <td>{{field.label_tag}}</td>
+                    <td>{{field}}</td>
+                    <td class="error">
+                        {% for error in field.errors %} {{error}} {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td>Created:</td>
+                <td colspan="2">
+                    {{userprofile.creation_time}}
+                </td>
+            </tr>
+            <tr>
+                <td>Last Updated:</td>
+                <td colspan="2">
+                    {{userprofile.update_time}}
+                </td>
+            </tr>
+        </table>
+        {% for field in user_form.hidden_fields %}
+            {{field}} {{field.errors}}
+        {% endfor %}
+        {% csrf_token %}
+        <input type="submit" value="Update">
+    </form>
+
+
+  {% endblock %}
+

@@ -1,0 +1,23 @@
+{% extends "taskList/base.html" %}
+
+
+{% block pagetitle %} <h1> Registration Form </h1>
+<p1> Please register here if you didn't do so.</p1>
+{% endblock %}
+
+
+{%  block content %}
+    <form method="post" action="{% url 'register' %}">
+        <table>
+            {{userform}}
+            {{regform}}
+
+        </table>
+        {% csrf_token %}
+        <input type="submit" value="Register" />
+    </form>
+{% endblock %}
+
+</body>
+</html>
+

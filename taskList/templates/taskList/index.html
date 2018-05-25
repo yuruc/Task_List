@@ -1,0 +1,95 @@
+{% extends "taskList/base.html" %}
+  {% block pagetitle %}
+    <h1>Task List</h1>
+        <p>Create tasks!!</p>
+  {% endblock %}
+      
+
+{% block introudction %}
+<p class="lead">Task list </p>
+{% endblock %}
+
+
+{% block content %}
+
+    <form method="post" action="{% url 'add' %}">
+        <table>
+            {{new_task}}
+        </table>
+        {% csrf_token %}
+        <input type="submit" text="send" class="btn btn-default" />
+    </form>
+
+<div class="lead"> Posts: </div>
+<div id="NewPost"> </div> <div class="oldnewPost"></div>
+<ol>
+    {% for task in tasks %}
+    <div class="col-md-11">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+              <h3 class="panel-title">
+                <a href="{% url 'task' task=task.id %}">
+                {{task.task_name}}</a> 
+            <br>
+            <div>
+      
+        </div>
+            </h3>
+            </div>
+            <div class="panel-body">
+            <p class="lead">
+            <p class="breakline">
+                <p>assigned to:
+                {% for user in task.assigned_users.all %}
+                    {{user.username}}
+                {% endfor %} 
+                </p>
+                <p>report to:
+                {% for manager in task.manager.all %}
+                    {{manager.username}}
+                {% endfor %}
+                </p>
+                <p>recurring: {{task.recurring}} </p>
+                <p>start date: {{task.event_start_date}} </p>
+                <p>due date: {{task.event_due_date}} </p>
+                <p>priority: {% if task.priority == "HIG" %}
+                             high
+                             {% elif task.priority == "MED" %}
+                             medium
+                             {% else %}
+                             low
+                             {% endif %}
+
+
+                </p>
+                <p>status:   {% if task.status == "NEW" %}
+                             new 
+                             {% elif task.status == "INP" %}
+                             in Progress
+                             {% elif task.status == "COM" %}
+                             completed
+
+
+                             {% endif %}
+                </p>
+                <p> active: {{task.is_active}}
+                </p>
+                
+
+            </p>
+            </p>
+
+
+
+
+                </div>
+          </div>
+    </div>
+
+    {% endfor %}
+</ol>
+
+{% endblock %}
+
+  </body>
+</html>

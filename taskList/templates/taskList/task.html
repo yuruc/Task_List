@@ -1,0 +1,96 @@
+{% extends "taskList/base.html" %}
+        {% block pagetitle %}
+        <h1>Task </h1>
+        {% endblock %}
+
+  {% block content %}
+    <p1>
+    {{ message }}
+</p>
+
+    <form method="POST" action="">
+        <table>
+            {% for field in task_form.visible_fields %}
+                <tr>
+                    <td>{{field.label_tag}}</td>
+                    <td>{{field}}</td>
+                    <td class="error">
+                        {% for error in field.errors %} {{error}} {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+
+            <tr>
+                <td>Last Updated:</td>
+                <td colspan="2">
+                    {{task.id}}
+
+                </td>
+            </tr>
+        </table>
+        {% for field in task_form.hidden_fields %}
+            {{field}} {{field.errors}}
+        {% endfor %}
+        {% csrf_token %}
+        <input type="submit" name="update_one_task" value="Apply change only to this event" >
+        {%  if task.recurring %}
+        <input type="submit" name="update_all_task" value="Apply change to all events" >
+        {% endif %}
+        <input type="submit" name="delete_one_task" value="Delete this task" >
+        {%  if task.recurring %}
+        <input type="submit" name="delete_all_task" value="Delete all recurring task" >
+        {% endif %}
+    </form>
+
+
+    <p> Notes: </p>
+     
+    {% for note in notes %}
+    <div>
+        {{ note.text }} by {{note.auther}} at {{note.datetime}}
+    </div> 
+
+    {% endfor %}
+
+    <form method="POST" action="">
+        <table>
+                    <td>{{note_form.text}}</td>
+
+                    <td class="error">
+                        {% for error in field.errors %} {{error}}
+                    </td>
+                </tr>
+            {% endfor %}
+            {% csrf_token %}
+        </table>
+        <input type="submit" name="add_note" value="add note" >
+    </form>
+
+    <p> Feedbacks: </p>
+
+
+    {% for feedback in feedbacks %}
+    <div>
+        {{ feedback.text }} by {{feedback.auther}} at {{feedback.datetime}}
+    </div> 
+    {% endfor %}
+
+
+
+    <form method="POST" action="">
+        <table>
+                <tr>
+                    <td>{{feedback_form.text}}</td>
+                    <td class="error">
+                        {% for error in field.errors %} {{error}} {% endfor %}
+                    </td>
+                </tr>
+            {% csrf_token %}
+        </table>
+        <input type="submit" name="add_feedback" value="add feedback" >
+    </form>
+
+
+
+
+  {% endblock %}
