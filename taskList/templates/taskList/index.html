@@ -12,7 +12,10 @@
 
 {% block content %}
 
-    <form method="post" action="{% url 'add' %}">
+
+
+    <a href='#' onClick='toggleForm();'>toggle task create form</a>
+    <form method="post" action="{% url 'add' %}" style='display: none;' id='taskCreateForm'>
         <table>
             {{new_task}}
         </table>
@@ -89,7 +92,11 @@
     {% endfor %}
 </ol>
 
+<script src="/static/taskList/index.js" type="text/javascript"></script>
+
 {% endblock %}
+
+
 
   </body>
 </html>

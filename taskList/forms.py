@@ -51,7 +51,7 @@ class TaskForm(forms.ModelForm):
 
     )
 
-    task_name = forms.CharField(max_length = 160, widget = forms.Textarea())
+    task_name = forms.CharField(max_length = 160, widget = forms.TextInput())
     note = forms.CharField(max_length = 200, widget = forms.Textarea())
     feedback = forms.CharField(max_length = 200, widget = forms.Textarea())
     recurring = forms.BooleanField(required=False, initial=False)
