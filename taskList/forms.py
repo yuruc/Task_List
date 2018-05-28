@@ -51,9 +51,8 @@ class TaskForm(forms.ModelForm):
 
     )
 
-    task_name = forms.CharField(max_length = 160, widget = forms.TextInput())
-    note = forms.CharField(max_length = 200, widget = forms.Textarea())
-    feedback = forms.CharField(max_length = 200, widget = forms.Textarea())
+    task_name = forms.CharField(max_length = 160, widget = forms.TextInput(attrs={'class':'form-control'}))
+
     recurring = forms.BooleanField(required=False, initial=False)
     event_start_date = forms.DateField(widget = forms.SelectDateWidget())
     event_due_date  = forms.DateField(widget = forms.SelectDateWidget())
@@ -79,6 +78,9 @@ class TaskForm(forms.ModelForm):
         (CANCELLED, 'Cancelled'),
     ) 
     status = forms.ChoiceField(widget=forms.Select, choices=STATUS_CHOICES)
+
+    note = forms.CharField(max_length = 200, widget = forms.Textarea())
+    feedback = forms.CharField(max_length = 200, widget = forms.Textarea())
     class Meta:
         model = Task
         fields = ('task_name', 'assigned_users', 'note', 'feedback', 'recurring', 
@@ -117,7 +119,7 @@ class TaskForm(forms.ModelForm):
             raise forms.ValidationError("need to assign repeat pattern for recurring tasks")
         if repeats != 'NONE' and not(repeat_start_date or repeat_end_date):
             raise forms.ValidationError("need to assign repeat start and end date for recurring tasks")
-        if not(repeat_start_date <= repeat_end_date):
+        if repeat_start_date and repeat_end_date and not(repeat_start_date <= repeat_end_date):
             raise forms.ValidationError("repeat start date can't be later then repeat due date")
         return repeat_end_date
 

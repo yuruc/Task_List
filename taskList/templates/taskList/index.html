@@ -1,9 +1,9 @@
 {% extends "taskList/base.html" %}
-  {% block pagetitle %}
-    <h1>Task List</h1>
-        <p>Create tasks!!</p>
-  {% endblock %}
-      
+{% block pagetitle %}
+<h1>Task List</h1>
+<p>Create tasks!!</p>
+{% endblock %}
+
 
 {% block introudction %}
 <p class="lead">Task list </p>
@@ -14,116 +14,62 @@
 
 
 
-    <a href='#' onClick='toggleForm(event);'>show/hide task create form</a>
-    <form method="post" action="{% url 'add' %}" style='display: none;' id='taskCreateForm'>
-        <table>
-            {{new_task}}
-        </table>
-        {% csrf_token %}
-        <input type="submit" text="send" class="btn btn-default" />
-    </form>
+<a href='#' onClick='toggleForm(event);'>show/hide task create form</a>
+<form method="post" action="{% url 'add' %}" style='display: none;' id='taskCreateForm'>
+    <table>
+        {{new_task}}
+    </table>
+    {% csrf_token %}
+    <input type="submit" text="send" class="btn btn-default" />
+</form>
 
 <div class="lead"> My Tasks: </div>
-<div class='row'>
-    <div class='col-md-12' style='background: white; padding: 24px; border-radius: 3px; border: 1px lightgray solid; margin-bottom: 12px;'>
-    <h3 style='margin-top: 0px; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px lightgray solid;'>New Tasks</h3>
-    {% for task in tasks %}
-        <div style='display: flex; align-items: flex-start; margin-top: 12px; margin-bottom: 12px;'>
-            <div>
-                {% if task.priority == "HIG" %}
-                    <span class="badge" style='background: hotpink;'>high priority</span>
-                {% elif task.priority == "MED" %}
-                    <span class="badge" style='background: orange;'>median priority</span>
-                {% else %}
-                    <span class="badge" style='background: royalblue;'>low priority</span>
-                {% endif %}
-            </div>
-        <div style='border-bottom: 1px lightgray solid; margin-left: 16px; padding-bottom: 12px; flex-grow: 1;'>
-            <div style='font-weight: bold;'>
-                {{task.task_name}}
-            </div>
-            <div>
-            assigned to <span>
-                {% for user in task.assigned_users.all %}
-                    {{user.username}}
-                {% endfor %}</span> by <span>
-             {% for manager in task.manager.all %}
-                    {{manager.username}}
-                {% endfor %}</span>
-            </div>
-        </div>
-
-
-
-        </div>
-    {% endfor %}
-
-    </div>
-</div>
-
-    {% for task in tasks %}
-
-    <div class="col-md-11">
-        <div class="panel panel-primary">
-            <div class="panel-heading">
-              <h3 class="panel-title">
-                <a href="{% url 'task' task=task.id %}">
-                {{task.task_name}}</a> 
-            <br>
-            <div>
-      
-        </div>
-            </h3>
-            </div>
-            <div class="panel-body">
-            <p class="lead">
-            <p class="breakline">
-                <p>assigned to:
-                {% for user in task.assigned_users.all %}
-                    {{user.username}}
-                {% endfor %} 
-                </p>
-                <p>report to:
-                {% for manager in task.manager.all %}
-                    {{manager.username}}
-                {% endfor %}
-                </p>
-                <p>recurring: {{task.recurring}} </p>
-                <p>start date: {{task.event_start_date}} </p>
-                <p>due date: {{task.event_due_date}} </p>
-                <p>priority: {% if task.priority == "HIG" %}
-                             high
-                             {% elif task.priority == "MED" %}
-                             medium
-                             {% else %}
-                             low
-                             {% endif %}
-
-
-                </p>
-                <p>status:   {% if task.status == "NEW" %}
-                             new 
-                             {% elif task.status == "INP" %}
-                             in progress
-                             {% elif task.status == "COM" %}
-                             completed
-                             {% endif %}
-                </p>
-                <p> active: {{task.is_active}}
-                </p>
-                
-
-            </p>
-            </p>
-
+{% for tasklist in tasklists %}
+    {% if tasklist.tasks %}
+        <div class='row'>
+            <div class='col-md-12' style='background: white; padding: 24px; border-radius: 3px; border: 1px lightgray solid; margin-bottom: 12px;'>
+                <h3 style='margin-top: 0px; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px lightgray solid;'>
+                    {{tasklist.name}}</h3>
+                    {% for task in tasklist.tasks %}
+                    <div style='display: flex; align-items: flex-start; margin-top: 12px; margin-bottom: 12px;'>
+                        <div style='width: 102px;'>
+                            {% if task.priority == "HIG" %}
+                            <span class="badge" style='background: hotpink;'>high priority</span>
+                            {% elif task.priority == "MED" %}
+                            <span class="badge" style='background: orange;'>median priority</span>
+                            {% else %}
+                            <span class="badge" style='background: royalblue;'>low priority </span>
+                            {% endif %}
+                        </div>
+                        <div style='border-bottom: 1px lightgray solid; margin-left: 16px; padding-bottom: 12px; flex-grow: 1;'>
+                            <div style='font-weight: bold;'>
+                             <a href="{% url 'task' task=task.id %}">{{task.task_name}}
+                             </a>
+                         </div>
+                         <div>
+                            assigned to <span>
+                            {% for user in task.assigned_users.all %}
+                            {{user.username}}
+                            {% endfor %}</span> by <span>
+                            {% for manager in task.manager.all %}
+                            {{manager.username}}
+                            {% endfor %}</span>
+                        </div>
+                    </div>
 
 
 
                 </div>
-          </div>
-    </div>
+                {% endfor %}
+                <div style='width: 100%; text-align: right;'> 
+                    <a href="{% url 'task_cat' task_cat=tasklist.url %}">See all {{tasklist.name}} ...</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}
 
-    {% endfor %}
+
 
 <script src="/static/taskList/index.js" type="text/javascript"></script>
 

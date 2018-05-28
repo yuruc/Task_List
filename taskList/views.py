@@ -81,12 +81,7 @@ def add_task(request):
     get task form to add new task and save form data
 
     '''
-    errors = []
-
-    tasks = Task.objects.filter(Q(assigned_users__username=request.user) |
-                Q(manager__username=request.user)).order_by('-status', 'rank')
-
-    context = {'tasks': tasks,  'errors': errors}
+    context = {}
 
     if request.method == "GET":
         context['new_task'] = TaskForm(user = request.user)
@@ -123,8 +118,10 @@ def add_task(request):
     alter_task.save()
     new_task.save_m2m()
 
-    tasks = Task.objects.all()
-    return render(request, 'taskList/index.html', context)
+    return home(request)
+
+
+    #return render(request, 'taskList/index.html', context)
 
 
 def cal_rank(each_duration, priority):
@@ -189,6 +186,8 @@ def cal_time_pattern(recurring_pattern):
 
 @transaction.atomic
 def handle_recurr_tasks(recurring_task, curr_time, new_task=None):
+    #curr_time is not used here, but it could be used to see if we need to 
+    #create more tasks too 
     '''
     create recurring new tasks when a new task is added / updated (if new_task != None). 
     check and create new tasks for a recurring tasks if the due date is None (if new_task == None)
@@ -556,6 +555,24 @@ def home(request):
     '''
     display user's tasks and allow the user to create/assign new tasks to others
     '''
+    context = {}
+
+    #to customize status' order
+
+    NEW = 'NEW'
+    IN_PROGRESS = 'INP'
+    COMPLETED = 'COM'
+    ON_HOLD = 'ONH'
+    CANCELLED = 'CAN'
+
+    context['tasklists'] = []
+    tasks_status_order = [NEW, IN_PROGRESS, COMPLETED, ON_HOLD, CANCELLED]
+    tasks_status_names_urls = [("New Tasks", "new_tasks"), ("In Progress Tasks", "in_progress_tasks") , ("Completed Tasks", "completed_tasks"), ("On Hold Tasks",  "on_hold_tasks"), ("Cancelled Tasks", "cancelled_tasks")]
+    for name, url in tasks_status_names_urls:
+        tasks = {'name': name, 'tasks':[], 'url':url}
+        context['tasklists'].append(tasks)
+
+
 
     #check all the recurring task without a due date and number is too small
     #if so, create new tasks for them, pass one children task object 
@@ -570,19 +587,72 @@ def home(request):
             except:
                 pass #put error message here, might be concurrency issue
 
-    all_tasks = Task.objects.filter(
+    #in order to customize the order of status, we don't just sort 
+    #by default
+    order_num = 0
+    for task_status in tasks_status_order:
+        tasks = Task.objects.filter(
             Q(assigned_users__username=request.user) |
             Q(manager__username=request.user), 
-            is_active=True
-        ).order_by('status', 'rank')
+            is_active=True, status=task_status
+            ).order_by('rank')[:5]
+        context['tasklists'][order_num]['tasks'] = tasks
+        order_num += 1
+
+    
     user = User.objects.get(username=request.user)
     if request.method == "POST":
         new_task = TaskForm(request.POST, user = request.user)
     else:
         new_task = TaskForm(user = request.user)
-    context = {'tasks': all_tasks, 'new_task': new_task, 'user': user }
+
+    context['new_task'] = new_task
+    context['user'] = user 
     print(context)
+
     return render(request, 'taskList/index.html', context)
+
+@login_required
+def task_cat(request, task_cat):
+    NEW = 'NEW'
+    IN_PROGRESS = 'INP'
+    COMPLETED = 'COM'
+    ON_HOLD = 'ONH'
+    CANCELLED = 'CAN'
+
+    url_cat_mapping = { 
+        'new_tasks': NEW, 'in_progress_tasks': IN_PROGRESS, 
+        'completed_tasks': COMPLETED, 'on_hold_tasks':ON_HOLD, 
+        'cancelled_tasks':CANCELLED 
+    }
+
+    names_urls_mapping = {'new_tasks': 'New Tasks', "in_progress_tasks":"In Progress Tasks",'completed_tasks':"Completed Tasks", "on_hold_tasks":"On Hold Tasks", "cancelled_tasks":"Cancelled Tasks"}
+
+    if task_cat not in url_cat_mapping:
+        return bad_request(request)
+
+    context = {}
+
+    tasks = Task.objects.filter(
+            Q(assigned_users__username=request.user) |
+            Q(manager__username=request.user), 
+            is_active=True, status=url_cat_mapping[task_cat]
+            ).order_by('rank')
+
+
+    context['tasks'] = tasks
+    context['title'] = names_urls_mapping[task_cat]
+
+
+    user = User.objects.get(username=request.user)
+    if request.method == "POST":
+        new_task = TaskForm(request.POST, user = request.user)
+    else:
+        new_task = TaskForm(user = request.user)
+
+    context['new_task'] = new_task
+
+    return render(request, 'taskList/task_cat.html', context)
 
 
 @login_required
