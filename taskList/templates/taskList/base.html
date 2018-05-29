@@ -8,7 +8,10 @@
     {% load staticfiles %}
     <link href="{% static "taskList/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
 
+    <link href="{% static "taskList/index.css" %}" rel="stylesheet" type="text/css">
+
     <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+
 
     <title> {% block title %}Task List {% endblock %}</title>
 
@@ -46,11 +49,11 @@
       
 
 
-      <div class="jumbotron">
+      <h2 style="margin-top:80px">
         {% block pagetitle %}
 
         {% endblock %}
-      </div>
+      </h2>
       
     
 

@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^edit_user/(?P<user>\w+)/$', views.edit_user, name='edit_user'),
     url(r'^edit_tasks/(?P<task>\w+)/$', views.edit_tasks, name='edit_tasks'),
     url(r'^task_cat/(?P<task_cat>\w+)/$', views.task_cat, name='task_cat'),
+    url(r'^task_cat/(?P<task_cat>\w+)/(?P<page>\d+)/$', views.task_cat, name='task_cat_page'),
 
     #url(r'^photo/(?P<user>\w+)/$', views.photo, name='photo'),
     #url(r'^edit/(?P<user>\w+)/images/(?P<photo>\w+)', views.photo),

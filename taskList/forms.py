@@ -22,7 +22,9 @@ class TaskForm(forms.ModelForm):
                 self.option_users.append((each_user.id, each_user))
 
         self.fields['assigned_users'] = forms.MultipleChoiceField(choices=self.option_users)
-        self.fields['manager'] = forms.ChoiceField(choices=self.option_manager)
+        self.fields['manager'] = forms.MultipleChoiceField(choices=self.option_manager)
+        #self.fields['assigned_users'].widget.attrs.update({'class': 'form-control'})
+        #self.fields['manager'].widget.attrs.update({'class': 'form-control'})
 
 
     YEARLY = 'YEAR'
@@ -51,8 +53,7 @@ class TaskForm(forms.ModelForm):
 
     )
 
-    task_name = forms.CharField(max_length = 160, widget = forms.TextInput(attrs={'class':'form-control'}))
-
+    task_name = forms.CharField(max_length = 160, widget = forms.TextInput())
     recurring = forms.BooleanField(required=False, initial=False)
     event_start_date = forms.DateField(widget = forms.SelectDateWidget())
     event_due_date  = forms.DateField(widget = forms.SelectDateWidget())
@@ -79,8 +80,8 @@ class TaskForm(forms.ModelForm):
     ) 
     status = forms.ChoiceField(widget=forms.Select, choices=STATUS_CHOICES)
 
-    note = forms.CharField(max_length = 200, widget = forms.Textarea())
-    feedback = forms.CharField(max_length = 200, widget = forms.Textarea())
+    note = forms.CharField(max_length = 200, widget = forms.Textarea(), required=False)
+    feedback = forms.CharField(max_length = 200, widget = forms.Textarea(), required=False)
     class Meta:
         model = Task
         fields = ('task_name', 'assigned_users', 'note', 'feedback', 'recurring', 

@@ -56,8 +56,15 @@
         </div>
         {% endfor %}
     </div>
+    <div style='width: 100%; text-align: center;'>
+        Go to Page  
+        {% for num in total_page_number %}
+            <a href="{% url 'task_cat_page' task_cat=task_url page=num %}">
+            {{num}} </a> |
+        {% endfor %}
 
 </div>
+
 
 
 

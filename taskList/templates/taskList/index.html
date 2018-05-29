@@ -1,72 +1,223 @@
 {% extends "taskList/base.html" %}
+
+
+
 {% block pagetitle %}
-<h1>Task List</h1>
-<p>Create tasks!!</p>
+<h1>My Task List</h1>
+<p>See all your tasks.</p>
 {% endblock %}
 
 
+
+
 {% block introudction %}
-<p class="lead">Task list </p>
+<p class="lead"></p>
 {% endblock %}
 
 
 {% block content %}
 
 
+{% load widget_tweaks %}
+
 
 <a href='#' onClick='toggleForm(event);'>show/hide task create form</a>
-<form method="post" action="{% url 'add' %}" style='display: none;' id='taskCreateForm'>
-    <table>
-        {{new_task}}
-    </table>
-    {% csrf_token %}
-    <input type="submit" text="send" class="btn btn-default" />
-</form>
-
-<div class="lead"> My Tasks: </div>
-{% for tasklist in tasklists %}
-    {% if tasklist.tasks %}
-        <div class='row'>
-            <div class='col-md-12' style='background: white; padding: 24px; border-radius: 3px; border: 1px lightgray solid; margin-bottom: 12px;'>
-                <h3 style='margin-top: 0px; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px lightgray solid;'>
-                    {{tasklist.name}}</h3>
-                    {% for task in tasklist.tasks %}
-                    <div style='display: flex; align-items: flex-start; margin-top: 12px; margin-bottom: 12px;'>
-                        <div style='width: 102px;'>
-                            {% if task.priority == "HIG" %}
-                            <span class="badge" style='background: hotpink;'>high priority</span>
-                            {% elif task.priority == "MED" %}
-                            <span class="badge" style='background: orange;'>median priority</span>
-                            {% else %}
-                            <span class="badge" style='background: royalblue;'>low priority </span>
-                            {% endif %}
-                        </div>
-                        <div style='border-bottom: 1px lightgray solid; margin-left: 16px; padding-bottom: 12px; flex-grow: 1;'>
-                            <div style='font-weight: bold;'>
-                             <a href="{% url 'task' task=task.id %}">{{task.task_name}}
-                             </a>
-                         </div>
-                         <div>
-                            assigned to <span>
-                            {% for user in task.assigned_users.all %}
-                            {{user.username}}
-                            {% endfor %}</span> by <span>
-                            {% for manager in task.manager.all %}
-                            {{manager.username}}
-                            {% endfor %}</span>
-                        </div>
-                    </div>
-
-
-
-                </div>
-                {% endfor %}
-                <div style='width: 100%; text-align: right;'> 
-                    <a href="{% url 'task_cat' task_cat=tasklist.url %}">See all {{tasklist.name}} ...</a>
+<div class="form-group">
+    <form method="post" action="{% url 'add' %}" style='display: none;' id='taskCreateForm' class="form-horizontal">
+        <div class="form-row">
+            {{new_task.task_name.label_tag}}
+            <div class="col-md-12">
+                <div class="form-group">
+                    {{new_task.task_name|attr:"class:form-control"}}
+                    {{new_task.task_name.errors}}
                 </div>
             </div>
         </div>
-    {% endif %}
+        <div class="form-row">
+            <div class="col-md-6">
+                <div class="form-group" style='padding-right: 4px;'>
+                    {{new_task.assigned_users.label_tag}}
+                    {{new_task.assigned_users|attr:"class:form-control"}}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group" style='padding-left: 4px;'>
+                    {{new_task.manager.label_tag}}
+                    {{new_task.manager|attr:"class:form-control"}}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-6">
+                <div class="form-group" style='padding-right: 4px;'>
+                    {{new_task.event_start_date.label_tag}}
+                    <div style="display: flex; width: 100%; justify-content: space-between;">
+                        {{new_task.event_start_date|attr:"class:form-group form-control"|attr:"style: width:33%; margin: 0px;"}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-6">
+                <div class="form-group" style='padding-left: 4px;'>
+                    {{new_task.event_due_date.label_tag}}
+                    <div style="display: flex; width: 100%; justify-content: space-between;">
+                        {{new_task.event_due_date|attr:"class:form-group form-control"|attr:"style: width:33%; margin: 0px;"}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-6">
+                <div class="form-group" style='padding-right: 4px;'>
+                    {{new_task.event_start_time.label_tag}}
+                    {{new_task.event_start_time|attr:"class:form-control"}}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-6">
+                <div class="form-group" style='padding-left: 4px;'>
+                    {{new_task.event_end_time.label_tag}}
+                    {{new_task.event_end_time|attr:"class:form-control"}}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    {{new_task.recurring.label_tag}}
+                    {{new_task.recurring|attr:"class:checkbox"|attr:"onClick:toggleRepeat(event)"}}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-12 taskRepeat">
+                <div class="form-group">
+                    {{new_task.repeats.label_tag}}
+                    {{new_task.repeats|attr:"class:form-control"}}
+                </div>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="col-md-6 taskRepeat">
+                <div class="form-group" style='padding-right: 4px;'>
+                    {{new_task.repeat_start_date.label_tag}}
+                    <div style="display: flex; width: 100%; justify-content: space-between;">
+                        {{new_task.repeat_start_date|attr:"class:form-group form-control"|attr:"style: width:33%; margin: 0px;"}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-6 taskRepeat">
+                <div class="form-group" style='padding-left: 4px;'>
+                    {{new_task.repeat_end_date.label_tag}}
+                    <div style="display: flex; width: 100%; justify-content: space-between;">
+                        {{new_task.repeat_end_date|attr:"class:form-group form-control"|attr:"style: width:33%; margin: 0px;"}}
+                    </div>
+                </div>
+            </div>
+        </div>        
+        <div class="form-row">
+            <div class="col-md-6">
+                <div class="form-group" style='padding-right: 4px;'>
+                    {{new_task.priority.label_tag}}
+                    {{new_task.priority|attr:"class:form-control"}}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-6">
+                <div class="form-group" style='padding-left: 4px;'>
+                    {{new_task.status.label_tag}}
+                    {{new_task.status|attr:"class:form-control"}}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-6">
+                <div class="form-group" style='padding-right: 4px;'>
+                    {{new_task.note.label_tag}}
+                    {{new_task.note|attr:"class:form-control"|attr:"rows=3"}}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-6">
+                <div class="form-group" style='padding-left: 4px;'>
+                    {{new_task.feedback.label_tag}}
+                    {{new_task.feedback|attr:"class:form-control"|attr:"rows=3"}}
+                </div>
+            </div>
+        </div>
+
+        {% for error in new_task.field.errors %} {{error}}
+        {% endfor %}
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <input type="submit" text="send" class="btn btn-default" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="lead"></div>
+{% for tasklist in tasklists %}
+{% if tasklist.tasks %}
+<div class='row'>
+    <div class='col-md-12' style='background: white; padding: 24px; border-radius: 3px; border: 1px lightgray solid; margin-bottom: 12px;'>
+        <h3 style='margin-top: 0px; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px lightgray solid;'>
+            {{tasklist.name}}</h3>
+            {% for task in tasklist.tasks %}
+            <div style='display: flex; align-items: flex-start; margin-top: 12px; margin-bottom: 12px;'>
+                <div style='width: 102px;'>
+                    {% if task.priority == "HIG" %}
+                    <span class="badge" style='background: hotpink;'>high priority</span>
+                    {% elif task.priority == "MED" %}
+                    <span class="badge" style='background: orange;'>median priority</span>
+                    {% else %}
+                    <span class="badge" style='background: royalblue;'>low priority </span>
+                    {% endif %}
+                </div>
+                <div style='border-bottom: 1px lightgray solid; margin-left: 16px; padding-bottom: 12px; flex-grow: 1;'>
+                    <div style='font-weight: bold;'>
+                       <a href="{% url 'task' task=task.id %}">{{task.task_name}}
+                       </a>
+                   </div>
+                   <div>
+                    assigned to <span>
+                    {% for user in task.assigned_users.all %}
+                    {{user.username}}
+                    {% endfor %}</span> by <span>
+                    {% for manager in task.manager.all %}
+                    {{manager.username}}
+                    {% endfor %}</span>
+                </div>
+            </div>
+
+
+
+        </div>
+        {% endfor %}
+        <div style='width: 100%; text-align: right;'> 
+            <a href="{% url 'task_cat' task_cat=tasklist.url %}">See all {{tasklist.name}} ...</a>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endfor %}
 
 

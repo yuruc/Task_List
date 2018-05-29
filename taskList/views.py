@@ -28,6 +28,8 @@ from dateutil.relativedelta import relativedelta
 from django.db.models import Q
 #deal with complicated queries 
 
+import math 
+
 
 
 @transaction.atomic
@@ -117,6 +119,8 @@ def add_task(request):
 
     alter_task.save()
     new_task.save_m2m()
+    print("request to pass")
+    print(request)
 
     return home(request)
 
@@ -613,7 +617,10 @@ def home(request):
     return render(request, 'taskList/index.html', context)
 
 @login_required
-def task_cat(request, task_cat):
+def task_cat(request, task_cat, page=1):
+    per_page_items = 10
+    page = int(page)
+
     NEW = 'NEW'
     IN_PROGRESS = 'INP'
     COMPLETED = 'COM'
@@ -637,20 +644,34 @@ def task_cat(request, task_cat):
             Q(assigned_users__username=request.user) |
             Q(manager__username=request.user), 
             is_active=True, status=url_cat_mapping[task_cat]
-            ).order_by('rank')
+            ).order_by('rank')[(page - 1)*per_page_items : page*per_page_items]
+
+    task_count = Task.objects.filter(
+            Q(assigned_users__username=request.user) |
+            Q(manager__username=request.user), 
+            is_active=True, status=url_cat_mapping[task_cat]
+            ).count()
+
+    total_page_number = math.ceil(task_count/per_page_items) + 1
+    print(task_count)
+
 
 
     context['tasks'] = tasks
     context['title'] = names_urls_mapping[task_cat]
+    context['total_page_number'] = range(1, total_page_number)
+    context['task_url'] = task_cat
 
 
     user = User.objects.get(username=request.user)
+
     if request.method == "POST":
         new_task = TaskForm(request.POST, user = request.user)
     else:
         new_task = TaskForm(user = request.user)
 
     context['new_task'] = new_task
+    print(context)
 
     return render(request, 'taskList/task_cat.html', context)
 
