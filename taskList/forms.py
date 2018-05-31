@@ -90,7 +90,6 @@ class TaskForm(forms.ModelForm):
     
     def clean(self):
         cleaned_data = super(TaskForm, self).clean()
-        print(self.cleaned_data)
         return cleaned_data
     
     def clean_event_due_date(self): 
@@ -135,9 +134,7 @@ class NoteForm(forms.ModelForm):
         exclude = ('task_id', 'auther', 'datetime', )
     
     def clean(self):
-        print("clean")
         cleaned_data = super(NoteForm, self).clean()
-        print(cleaned_data)
     def clean_text(self):
         text = self.cleaned_data.get('text')
         if len(text) > 500:
@@ -179,10 +176,9 @@ class UserForm(forms.ModelForm):
                                  widget = forms.PasswordInput())
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'username')
+        fields = ('first_name', 'last_name', 'email', 'username', )
     def clean(self):
         cleaned_data = super(UserForm, self).clean()
-        print(cleaned_data)
 
         # confirms that the two password fields match
         password1 = cleaned_data.get('password1')
@@ -198,7 +194,6 @@ class UserForm(forms.ModelForm):
         # confirm that the username is not already present in the
         # User model database.
         username = self.cleaned_data.get('username')
-        print(username)
         if re.match('\w+' , username) == None:
             raise forms.ValidationError("Username must be the combination of charaters and numbers")
         if User.objects.filter(username__exact=username):
@@ -222,7 +217,6 @@ class RegistrationForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super(RegistrationForm, self).clean()
-        print(cleaned_data)
         return cleaned_data
     def clean_department(self):
         department_choice = set(['IT', 'RD', 'MR', 'HR', 'AF'])
@@ -240,6 +234,6 @@ class EditForm(forms.ModelForm):
     username = forms.CharField(widget=forms.TextInput(attrs={'readonly':'readonly'}))
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'username')
+        fields = ('username', 'first_name', 'last_name', 'email')
 
 

@@ -1,42 +1,94 @@
 {% extends "taskList/base.html" %}
 
 {% block pagetitle %}
-    <h1>User Info</h1>
-    <p>See this user's profile. </p> 
+<h1>User Info</h1>
+<p>See this user's profile. </p> 
 {% endblock %}
 
-  {% block content %}
-  <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
-
-
-<ol>
-            <p class="lead">
-                Username: {{query_user.username}} <br>
-                First name: {{query_user.first_name}} <br>
-                Last name:{{query_user.last_name}} <br>
-                Email: {{query_user.email}} <br>
-                Title: {{userprofile.title}} <br>
-                Department: {{userprofile.department}}
-
-            </p>
-
-
-</ol>
+{% block content %}
+<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
 
 
 
-<ol>
-    <p class="lead">Here is my tasks: </p>
-    {% for task in tasks %}
-        <a href="{% url 'task' task=task.id %}">
-                {{task.task_name}}</a> 
-            <br>
+<div class='row'>
+    <div class='col-md-12' style='background: white; padding: 24px; border-radius: 3px; border: 1px lightgray solid; margin-bottom: 12px;'>
+        <h3 style='margin-top: 0px; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px lightgray solid;'>
+            {{query_user.first_name}} {{query_user.last_name}}'s Profile</h3>
+            Username: {{query_user.username}} <br>
+            Email: {{query_user.email}} <br>
+            Title: {{userprofile.title}} <br>
+            Department: {{userprofile.department}}
 
-    {% endfor %}
-</ol>
+        </div>
 
-  {% endblock %}
+    </div>
 
-      </div> 
+    <div class='row'>
+        <div class='col-md-12' style='background: white; padding: 24px; border-radius: 3px; border: 1px lightgray solid; margin-bottom: 12px;'>
+            <h3 style='margin-top: 0px; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px lightgray solid;'>
+                My Own/Managed tasks</h3>
+                {% for task in tasks %}
+                <div style='display: flex; align-items: flex-start; margin-top: 12px; margin-bottom: 12px;'>
+                    <div style='width: 102px;'>
+                        {% if task.priority == "HIG" %}
+                        <span class="badge" style='background: hotpink;'>high priority</span>
+                        {% elif task.priority == "MED" %}
+                        <span class="badge" style='background: orange;'>median priority</span>
+                        {% else %}
+                        <span class="badge" style='background: royalblue;'>low priority </span>
+                        {% endif %}
+                    </div>
+                    <div style='width: 102px;'>
+                        <span class="label" style='border: 1px solid gray; border-radius:5px; color:gray;'>
+                            {% if task.status == "NEW" %}
+                            New
+                            {% elif task.status == "INP" %}
+                            In Progress
+                            {% elif task.status == "COM" %}
+                            Completed
+                            {% elif task.status == "ONH" %}
+                            On Hold
+                            {% elif task.status == "CAN" %}
+                            Cancelled
+                            {% endif %}
+
+                        </span>
+                        
+                    </div>
+                    <div style='border-bottom: 1px lightgray solid; margin-left: 16px; padding-bottom: 12px; flex-grow: 1;'>
+                        <div style='font-weight: bold;'>
+                         <a href="{% url 'task' task=task.id %}">{{task.task_name}}
+                         </a>
+                     </div>
+                     <div>
+                        assigned to <span>
+                        {% for user in task.assigned_users.all %}
+                        {{user.username}}
+                        {% endfor %}</span> by <span>
+                        {% for manager in task.manager.all %}
+                        {{manager.username}}
+                        {% endfor %}</span>
+                    </div>
+                </div>
+
+
+
+            </div>
+            {% endfor %}
+        </div>
+        <div style='width: 100%; text-align: center;'>
+            Go to Page  
+            {% for num in total_page_number %}
+            <a href="{% url 'user_pages' user=query_user.id page=num %}">
+                {{num}} </a> |
+                {% endfor %}
+
+            </div>
+
+
+
+            {% endblock %}
+
+        </div> 
     </div> 
 

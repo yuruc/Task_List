@@ -1,23 +1,27 @@
 {% extends "taskList/base.html" %}
 
 {% block pagetitle %}
-    <h1>Login</h1>
-        <p>Use your username and password to login. If you didn't register, please register first! </p>
+<h1>Login</h1>
+<p>Use your username and password to login. If you didn't register, please register first! </p>
 {% endblock %}
-      <div class="page-header">
+<div class="page-header">
 
 
-{% block content %}
+    {% block content %}
+
+
+    {% load widget_tweaks %}
+
     <form method="post" action="{% url 'login' %}">
         <table>
-        <tr>
-            <td>{{ form.username.label_tag }}</td>
-            <td>{{ form.username }}</td>
-        </tr>
-        <tr>
-            <td>{{ form.password.label_tag }}</td>
-            <td>{{ form.password }}</td>
-        </tr>
+            <tr>
+                <td>{{ form.username.label_tag }}</td>
+                <td>{{ form.username|attr:"class:form-control" }}</td>
+            </tr>
+            <tr>
+                <td>{{ form.password.label_tag }}</td>
+                <td>{{ form.password|attr:"class:form-control" }}</td>
+            </tr>
         </table>
 
         <input type="submit" value="Login" class="btn btn-default" />
@@ -25,6 +29,6 @@
         <input type="hidden" name="next" value="{{ next }}" />
         {% csrf_token %}
     </form>
-{% endblock %}
+    {% endblock %}
 
 

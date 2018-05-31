@@ -1,38 +1,38 @@
 
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    {% load staticfiles %}
-    <link href="{% static "taskList/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% load staticfiles %}
+  <link href="{% static "taskList/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
 
-    <link href="{% static "taskList/index.css" %}" rel="stylesheet" type="text/css">
+  <link href="{% static "taskList/index.css" %}" rel="stylesheet" type="text/css">
 
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
-
-
-    <title> {% block title %}Task List {% endblock %}</title>
+  <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
 
 
-  </head>
-  <body style='background: #eee;'>
+  <title> {% block title %}Task List {% endblock %}</title>
 
 
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container" >
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
+</head>
+<body style='background: #eee;'>
 
-            <li class="active">
-              <a href="/">Home</a></li>
-                         
+
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container" >
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+
+          <li class="active">
+            <a href="/">Home</a></li>
+            
 
             {% if user.username %}
-              <li><a href="{% url 'logout' %}">Logout</a></li>
-              <li><a href="{% url 'user' user=user.id %}">My Profile</a></li>
-              <li><a href="{% url 'edit_user' user=user.id %}">Edit My Profile</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+            <li><a href="{% url 'user' user=user.id %}">My Profile</a></li>
+            <li><a href="{% url 'edit_user' user=user.id %}">Edit My Profile</a></li>
 
 
             {% endif %}
@@ -45,7 +45,7 @@
     </nav>
 
 
- <div class="container theme-showcase" role="main">
+    <div class="container theme-showcase" role="main">
       
 
 
@@ -55,29 +55,29 @@
         {% endblock %}
       </h2>
       
-    
+      
 
 
-{% for error in errors %}
-    <div class="lead" style="color: red">
+      {% for error in errors %}
+      <div class="lead" style="color: red">
         {{error}}
-    </div>
-{% endfor %}
+      </div>
+      {% endfor %}
 
-<div>
-{% block introudction %}
-{% endblock %}
-</div>
+      <div>
+        {% block introudction %}
+        {% endblock %}
+      </div>
 
-<div>
-  {% block content %}
-  {% endblock %}
-</div>
-
-
+      <div>
+        {% block content %}
+        {% endblock %}
       </div>
 
 
+    </div>
+
+
   </body>
-</html>
+  </html>
 

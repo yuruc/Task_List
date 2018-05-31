@@ -18,8 +18,10 @@ urlpatterns = [
     # Route to logout a user and send them back to the login page
     url(r'^logout$', auth_views.logout_then_login, name ='logout'),
     url(r'^register$', views.register, name='register'),
-    url(r'^user/(?P<user>\w+)/$', views.user, name='user'),
-    url(r'^task/(?P<task>\w+)/$', views.task, name='task'),
+    url(r'^user/(?P<user>\d+)/$', views.user, name='user'),
+    url(r'^user/(?P<user>\d+)/(?P<page>\d+)/$', views.user, name='user_pages'),
+
+    url(r'^task/(?P<task>\d+)/$', views.task, name='task'),
     url(r'^edit_user/(?P<user>\w+)/$', views.edit_user, name='edit_user'),
     url(r'^edit_tasks/(?P<task>\w+)/$', views.edit_tasks, name='edit_tasks'),
     url(r'^task_cat/(?P<task_cat>\w+)/$', views.task_cat, name='task_cat'),

@@ -194,10 +194,10 @@
                 </div>
                 <div style='border-bottom: 1px lightgray solid; margin-left: 16px; padding-bottom: 12px; flex-grow: 1;'>
                     <div style='font-weight: bold;'>
-                       <a href="{% url 'task' task=task.id %}">{{task.task_name}}
-                       </a>
-                   </div>
-                   <div>
+                     <a href="{% url 'task' task=task.id %}">{{task.task_name}}
+                     </a>
+                 </div>
+                 <div>
                     assigned to <span>
                     {% for user in task.assigned_users.all %}
                     {{user.username}}

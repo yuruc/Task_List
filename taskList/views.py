@@ -119,13 +119,9 @@ def add_task(request):
 
     alter_task.save()
     new_task.save_m2m()
-    print("request to pass")
-    print(request)
 
-    return home(request)
+    return redirect(reverse('home'))
 
-
-    #return render(request, 'taskList/index.html', context)
 
 
 def cal_rank(each_duration, priority):
@@ -520,6 +516,19 @@ def task(request, task):
             context = delete_tasks(request, task)
         elif 'delete_all_task' in request.POST:
             context = delete_recurr_tasks(request, task=task)
+
+        note_to_display = Note.objects.filter(task_id = task)
+        feedback_to_display = Feedback.objects.filter(task_id = task)
+        note_form = NoteForm()
+        feedback_form = FeedbackForm()
+
+        context['notes'] = note_to_display
+        context['feedbacks'] = feedback_to_display
+        context['note_form'] = NoteForm()
+        context['feedback_form'] = FeedbackForm()
+
+
+
         
         return render(request, 'taskList/task.html', context)       
 
@@ -527,28 +536,41 @@ def task(request, task):
 
 
 @login_required
-def user(request, user):
+def user(request, user, page=1):
+    per_page_items = 10
+    page = int(page)
+
     '''
     display each user's profile
     '''
+    context = {}
 
     errors = []
-    print(user)
 
     try: 
         user_to_display = User.objects.get(id=user)
         userprofile_to_display = UserProfile.objects.get(user__username=user_to_display.username)
-        task_to_display = Task.objects.all().filter(
+        task_to_display = Task.objects.filter(
             Q(assigned_users__username=user_to_display.username) |
-            Q(manager__username=user_to_display.username))
+            Q(manager__username=user_to_display.username), 
+            is_active=True).order_by('status','rank')[(page - 1)*per_page_items : page*per_page_items]
+        task_count = Task.objects.filter(
+            Q(assigned_users__username=user_to_display.username) |
+            Q(manager__username=user_to_display.username), 
+            is_active=True).count()
     except ObjectDoesNotExist:
         errors.append('The user did not exist.')
         context = {'errors': errors}    
-        print(context)
         return render(request, 'taskList/user.html', context)
 
-    context = {'query_user': user_to_display, 'userprofile': userprofile_to_display, 'errors': errors, 'tasks': task_to_display}
-    print(context)
+
+    total_page_number = math.ceil(task_count/per_page_items) + 1
+
+
+
+    context = {'query_user': user_to_display, 'userprofile': userprofile_to_display, 'errors': errors, 'tasks': task_to_display, 
+    'total_page_number':range(1, total_page_number)}
+
     return render(request, 'taskList/user.html', context)
 
 
@@ -560,6 +582,7 @@ def home(request):
     display user's tasks and allow the user to create/assign new tasks to others
     '''
     context = {}
+    per_cat_tasks = 5
 
     #to customize status' order
 
@@ -599,7 +622,7 @@ def home(request):
             Q(assigned_users__username=request.user) |
             Q(manager__username=request.user), 
             is_active=True, status=task_status
-            ).order_by('rank')[:5]
+            ).order_by('rank')[:per_cat_tasks]
         context['tasklists'][order_num]['tasks'] = tasks
         order_num += 1
 
@@ -612,7 +635,6 @@ def home(request):
 
     context['new_task'] = new_task
     context['user'] = user 
-    print(context)
 
     return render(request, 'taskList/index.html', context)
 
@@ -653,7 +675,6 @@ def task_cat(request, task_cat, page=1):
             ).count()
 
     total_page_number = math.ceil(task_count/per_page_items) + 1
-    print(task_count)
 
 
 
@@ -671,7 +692,6 @@ def task_cat(request, task_cat, page=1):
         new_task = TaskForm(user = request.user)
 
     context['new_task'] = new_task
-    print(context)
 
     return render(request, 'taskList/task_cat.html', context)
 

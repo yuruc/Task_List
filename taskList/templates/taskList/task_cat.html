@@ -11,36 +11,29 @@
 
 
 
-<a href='#' onClick='toggleForm(event);'>show/hide task create form</a>
-<form method="post" action="{% url 'add' %}" style='display: none;' id='taskCreateForm'>
-    <table>
-        {{new_task}}
-    </table>
-    {% csrf_token %}
-    <input type="submit" text="send" class="btn btn-default" />
-</form>
+
 
 <div class='row'>
     <div class='col-md-12' style='background: white; padding: 24px; border-radius: 3px; border: 1px lightgray solid; margin-bottom: 12px;'>
         <h3 style='margin-top: 0px; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px lightgray solid;'>
             {{title}}</h3>
-        {% for task in tasks %}
-        <div style='display: flex; align-items: flex-start; margin-top: 12px; margin-bottom: 12px;'>
-            <div style='width: 102px;'>
-                {% if task.priority == "HIG" %}
-                <span class="badge" style='background: hotpink;'>high priority</span>
-                {% elif task.priority == "MED" %}
-                <span class="badge" style='background: orange;'>median priority</span>
-                {% else %}
-                <span class="badge" style='background: royalblue;'>low priority </span>
-                {% endif %}
-            </div>
-            <div style='border-bottom: 1px lightgray solid; margin-left: 16px; padding-bottom: 12px; flex-grow: 1;'>
-                <div style='font-weight: bold;'>
-                   <a href="{% url 'task' task=task.id %}">{{task.task_name}}
-                   </a>
+            {% for task in tasks %}
+            <div style='display: flex; align-items: flex-start; margin-top: 12px; margin-bottom: 12px;'>
+                <div style='width: 102px;'>
+                    {% if task.priority == "HIG" %}
+                    <span class="badge" style='background: hotpink;'>high priority</span>
+                    {% elif task.priority == "MED" %}
+                    <span class="badge" style='background: orange;'>median priority</span>
+                    {% else %}
+                    <span class="badge" style='background: royalblue;'>low priority </span>
+                    {% endif %}
                 </div>
-                <div>
+                <div style='border-bottom: 1px lightgray solid; margin-left: 16px; padding-bottom: 12px; flex-grow: 1;'>
+                    <div style='font-weight: bold;'>
+                     <a href="{% url 'task' task=task.id %}">{{task.task_name}}
+                     </a>
+                 </div>
+                 <div>
                     assigned to <span>
                     {% for user in task.assigned_users.all %}
                     {{user.username}}
@@ -59,15 +52,12 @@
     <div style='width: 100%; text-align: center;'>
         Go to Page  
         {% for num in total_page_number %}
-            <a href="{% url 'task_cat_page' task_cat=task_url page=num %}">
+        <a href="{% url 'task_cat_page' task_cat=task_url page=num %}">
             {{num}} </a> |
-        {% endfor %}
+            {% endfor %}
 
-</div>
-
-
+        </div>
 
 
-<script src="/static/taskList/index.js" type="text/javascript"></script>
 
-{% endblock %}
+        {% endblock %}
