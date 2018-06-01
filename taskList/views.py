@@ -84,6 +84,7 @@ def add_task(request):
 
     '''
     context = {}
+    errors = []
 
     if request.method == "GET":
         context['new_task'] = TaskForm(user = request.user)
@@ -119,6 +120,7 @@ def add_task(request):
 
     alter_task.save()
     new_task.save_m2m()
+    print("all tasks", Task.objects.all().count())
 
     return redirect(reverse('home'))
 
@@ -264,11 +266,14 @@ def edit_tasks(request, task):
     #if any part of the task changed and if it was a recurring task 
     #then it won't be recurring task anymore 
     if target_task.recurring:
+        print(1)
         target_task.recurring = False
         target_task.recurr_task = None
         target_task.save()
+        task_form.cleaned_data['recurring'] = False
     #if the task wasn't recurring but it is set to be recurring task now
     elif task_form.cleaned_data['recurring'] and not target_task.recurring:
+        print(2)
         new_recurr = RecurringTask(recurr_task_name=task_form.cleaned_data['task_name'], 
             recurr_last_date = task_form.cleaned_data['event_start_date'], 
             due_date = task_form.cleaned_data['repeat_end_date'], 
@@ -277,6 +282,7 @@ def edit_tasks(request, task):
         new_recurr.save()
         handle_recurr_tasks(new_recurr, datetime.now(), task_form)
         #will create all recurr task after/except the current one
+    print(task_form.cleaned_data)
 
     target_task.save()
     task_form.save()
@@ -312,10 +318,11 @@ def edit_recurr_tasks(request, task):
     all_tasks = Task.objects.select_for_update().select_for_update().filter(
                 Q(assigned_users__username=request.user) |
                 Q(manager__username=request.user), 
-                recurr_task=target_task.recurr_task)
+                recurr_task=target_task.recurr_task).distinct()
     
     event_start = target_task.event_start_date
     event_end = target_task.event_due_date
+    repeats = target_task.repeats
 
     task_form = TaskForm(request.POST, instance=target_task, user=request.user)
 
@@ -334,14 +341,25 @@ def edit_recurr_tasks(request, task):
     #There are 3 kinds possiblity to change all the task:
 
     #1. change to non-recurring task, which means all the other recurring tasks should be deleted 
+    print("edit recurr")
     if target_task.repeats == False:
+        print("situation 1 ")
         target_task.recurr_task.set(None)
         delete_recurr_tasks(request, task=task)
 
     #2. change the recurring pattern(end date due date etc), which may change the number of recurring tasks.
     #here I delete all the other recurring tasks (only the current one will have same task id & notes & feedacks), 
     #and create new tasks since it's hard to say which one matches which one if the number of recurring tasks is changed 
-    elif target_task.repeat_start_date != all_tasks[0].repeat_start_date or target_task.repeat_end_date != all_tasks[0].repeat_start_date or target_task.event_start_date != event_start or target_task.event_due_date != event_end:
+    elif target_task.repeat_start_date != all_tasks[0].repeat_start_date or target_task.repeat_end_date != all_tasks[0].repeat_end_date or target_task.event_start_date != event_start or target_task.event_due_date != event_end or target_task.repeats != repeats:
+        print("situation 2 ")
+        print(target_task.repeat_start_date, all_tasks[0].repeat_start_date)
+        print(target_task.repeat_end_date, all_tasks[0].repeat_end_date)
+        print(target_task.event_start_date, event_start)
+        print(target_task.event_due_date, event_end)
+        print(target_task.repeats, repeats)
+
+
+
 
         new_recurr = RecurringTask(recurr_task_name=task_form.cleaned_data['task_name'], 
             recurr_last_date = task_form.cleaned_data['event_start_date'], 
@@ -351,13 +369,17 @@ def edit_recurr_tasks(request, task):
         new_recurr.save()
         handle_recurr_tasks(new_recurr, datetime.now(), task_form) #create new task after the current one
         to_delete_recurring_task = target_task.recurr_task
-        target_task.recurr_task.set(None)
+        target_task.recurr_task = None
+        target_task.save()
         delete_recurr_tasks(request, recurr_task=to_delete_recurring_task)
 
     #3. doesn't change anything related to recurring patren, so just upadte the info for all
     else:
+        print("situation 3 ")
         sample_task = target_task
+        print(all_tasks)
         for task in all_tasks:
+            print(task)
             task.task_name = sample_task.task_name
             task.note = sample_task.note
             task.feedback = sample_task.feedback
@@ -366,9 +388,9 @@ def edit_recurr_tasks(request, task):
             task.status = sample_task.status
             task.event_start_time = sample_task.event_start_time
             task.event_end_time = sample_task.event_end_time
-            task.manager.set(sample_task.manager)
-            task.assigned_users.set(sample_task.assigned_users)
-
+            task.manager= task_form.cleaned_data['manager']
+            task.assigned_users = task_form.cleaned_data['assigned_users']
+            task.save()
     context = {'message': 'Tasks are updated', 'tasks': target_task, 'task_form': task_form}
     return context
 
@@ -385,9 +407,10 @@ def delete_tasks(request, task):
     if target_task != None:
         target_task.is_active = False
         recurr_task = target_task.recurr_task
-        target_task.recurr_task.nums_curr_task -= 1
+        if recurr_task:
+            recurr_task.nums_curr_task -= 1
+            recurr_task.save()
         target_task.save()
-        recurr_task.save()
     else:
         errors.append('Task not found.')
     context = {'message': 'Task is deleted', 'errors': errors}
@@ -404,18 +427,21 @@ def delete_recurr_tasks(request, task = None, recurr_task = None):
     all_tasks = []
 
     if task != None and recurr_task == None:
+        print("del 0")
         target_task = Task.objects.select_for_update().filter(id=task).first()
         if target_task != None:
             recurr_task = target_task.recurr_task
 
     if recurr_task != None:
+        print("del 1")
         all_tasks = Task.objects.select_for_update().filter( 
             Q(assigned_users__username=request.user) | Q(manager__username=request.user), 
-            recurr_task=recurr_task)
+            recurr_task=recurr_task).distinct()
         recurr_task.is_active = False
         recurr_task.nums_curr_task = 0
         recurr_task.save()
     else:
+        print("del 3")
         context = {'message': 'Task not found'}
         return context
 
@@ -423,6 +449,7 @@ def delete_recurr_tasks(request, task = None, recurr_task = None):
     for task in all_tasks:
         task.is_active = False
         task.save()
+    print(len(all_tasks))
 
     context = {'message': 'All tasks are deleted'}
 
@@ -488,7 +515,7 @@ def task(request, task):
             Q(manager__username=request.user), 
             id=task, 
             is_active=True
-        )
+        ).distinct()
 
         note_to_display = Note.objects.filter(task_id = task)
         feedback_to_display = Feedback.objects.filter(task_id = task)
@@ -501,7 +528,7 @@ def task(request, task):
         task_form = TaskForm(instance=task_to_display[0], user = request.user)
         note_form = NoteForm()
         feedback_form = FeedbackForm()
-        context = {'errors': errors, 'tasks': task_to_display, 
+        context = {'errors': errors, 'task': task_to_display.first, 
             'task_form':task_form, 'feedbacks': feedback_to_display, 
             'notes': note_to_display, 'note_form': note_form, 'feedback_form': feedback_form}
         
@@ -553,11 +580,11 @@ def user(request, user, page=1):
         task_to_display = Task.objects.filter(
             Q(assigned_users__username=user_to_display.username) |
             Q(manager__username=user_to_display.username), 
-            is_active=True).order_by('status','rank')[(page - 1)*per_page_items : page*per_page_items]
+            is_active=True).distinct().order_by('status','rank')[(page - 1)*per_page_items : page*per_page_items]
         task_count = Task.objects.filter(
             Q(assigned_users__username=user_to_display.username) |
             Q(manager__username=user_to_display.username), 
-            is_active=True).count()
+            is_active=True).distinct().count()
     except ObjectDoesNotExist:
         errors.append('The user did not exist.')
         context = {'errors': errors}    
@@ -582,7 +609,7 @@ def home(request):
     display user's tasks and allow the user to create/assign new tasks to others
     '''
     context = {}
-    per_cat_tasks = 5
+    per_cat_tasks = 10
 
     #to customize status' order
 
@@ -600,12 +627,13 @@ def home(request):
         context['tasklists'].append(tasks)
 
 
+    print(1, "all tasks", Task.objects.all().count())
 
     #check all the recurring task without a due date and number is too small
     #if so, create new tasks for them, pass one children task object 
     all_recurr_tasks = Task.objects.exclude(recurr_task=None).filter(Q(assigned_users__username=request.user) |
          Q(manager__username=request.user), 
-            is_active=True).values_list('recurr_task', flat=True).distinct()
+            is_active=True).distinct().values_list('recurr_task', flat=True).distinct()
     if len(all_recurr_tasks) != 0:
         for recurr_task in all_recurr_tasks:
             try:
@@ -613,6 +641,7 @@ def home(request):
                 handle_recurr_tasks(recurr_task_obj, datetime.now)
             except:
                 pass #put error message here, might be concurrency issue
+    print(2, "all tasks", Task.objects.all().count())
 
     #in order to customize the order of status, we don't just sort 
     #by default
@@ -621,9 +650,12 @@ def home(request):
         tasks = Task.objects.filter(
             Q(assigned_users__username=request.user) |
             Q(manager__username=request.user), 
+            #manager__username=request.user,
+            #assigned_users__username=request.user,
             is_active=True, status=task_status
-            ).order_by('rank')[:per_cat_tasks]
+            ).distinct().order_by('rank')[:per_cat_tasks]
         context['tasklists'][order_num]['tasks'] = tasks
+        print("GOT N tasks", tasks.count())
         order_num += 1
 
     
@@ -635,6 +667,10 @@ def home(request):
 
     context['new_task'] = new_task
     context['user'] = user 
+
+    print(3, "all tasks", Task.objects.all().count())
+    print(context)
+
 
     return render(request, 'taskList/index.html', context)
 
@@ -666,13 +702,13 @@ def task_cat(request, task_cat, page=1):
             Q(assigned_users__username=request.user) |
             Q(manager__username=request.user), 
             is_active=True, status=url_cat_mapping[task_cat]
-            ).order_by('rank')[(page - 1)*per_page_items : page*per_page_items]
+            ).distinct().order_by('rank')[(page - 1)*per_page_items : page*per_page_items]
 
     task_count = Task.objects.filter(
             Q(assigned_users__username=request.user) |
             Q(manager__username=request.user), 
             is_active=True, status=url_cat_mapping[task_cat]
-            ).count()
+            ).distinct().count()
 
     total_page_number = math.ceil(task_count/per_page_items) + 1
 

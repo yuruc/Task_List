@@ -200,7 +200,7 @@
                  <div>
                     assigned to <span>
                     {% for user in task.assigned_users.all %}
-                    {{user.username}}
+                    {{user.username}}, 
                     {% endfor %}</span> by <span>
                     {% for manager in task.manager.all %}
                     {{manager.username}}
